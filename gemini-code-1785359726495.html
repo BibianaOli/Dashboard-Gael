@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dashboard UFRGS - Enfermagem</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Paleta Moderna Light (Baseada nas cores originais) */
+            --bg-color: #f3f4f6; 
+            --surface: #ffffff; 
+            --surface-hover: #f9fafb;
+            --primary: #0f3c5c; 
+            --primary-fade: rgba(15, 60, 92, 0.1);
+            --text-main: #1f2937; 
+            --text-muted: #6b7280; 
+            --border: #e5e7eb; 
+            --danger: #ef4444;
+            
+            /* Cores Pastéis das Cadeiras */
+            --theme-anatomia-bg: #fee2e2; --theme-anatomia-text: #991b1b;
+            --theme-antropologia-bg: #fef9c3; --theme-antropologia-text: #854d0e;
+            --theme-fundamentos-bg: #f3e8ff; --theme-fundamentos-text: #6b21a8;
+            --theme-biofisica-bg: #cffafe; --theme-biofisica-text: #155e75;
+            --theme-ecologia-bg: #dcfce7; --theme-ecologia-text: #166534;
+            --theme-bioquimica-bg: #e9d5ff; --theme-bioquimica-text: #581c87;
+            --theme-histologia-bg: #f5ebe0; --theme-histologia-text: #5e503f;
+            --theme-coletiva-bg: #ffedd5; --theme-coletiva-text: #c2410c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1300px;
+            padding-top: 20px;
+            padding-bottom: 50px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: var(--text-main);
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        h1 span {
+            color: var(--primary);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* --- CONTROLE DE ABAS (Estilo Segmented Control) --- */
+        .tabs-container {
+            background: var(--surface);
+            padding: 6px;
+            border-radius: 20px;
+            display: flex;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-btn.active {
+            background: var(--bg-color);
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-content.active { display: block; }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- SEÇÃO WIDGETS (Cartão e Tickets) --- */
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .widget-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        .widget-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Cartão Virtual UFRGS */
+        .digital-card {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e6b9c 100%);
+            border-radius: 16px;
+            padding: 25px 20px;
+            color: #ffffff;
+            box-shadow: 0 10px 20px var(--primary-fade);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .digital-card::after {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 120px; height: 120px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .digital-card-label { font-size: 0.8rem; font-weight: 600; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; }
+        .digital-card-number { font-size: 2.5rem; font-weight: 800; letter-spacing: 4px; margin-top: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        
+        /* Input Tickets Moderno */
+        .input-group {
+            display: flex;
+            background: var(--surface-hover);
+            border-radius: 16px;
+            padding: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .input-group input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 15px;
+            color: var(--text-main);
+            font-family: monospace;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .input-group input::placeholder { color: var(--text-muted); font-family: 'Inter'; }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .btn-primary:active { transform: scale(0.95); }
+        .btn-primary:hover { background: #164f78; }
+
+        .tickets-list {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 130px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .tickets-list::-webkit-scrollbar { width: 4px; }
+        .tickets-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .ticket-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface-hover);
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+        }
+
+        .btn-icon {
+            background: #fee2e2;
+            color: var(--danger);
+            border: none;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .btn-icon:active { transform: scale(0.9); }
+
+        /* --- TABELA DE HORÁRIOS MINIMALISTA --- */
+        .schedule-container {
+            background: var(--surface);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+            max-height: 70vh;
+        }
+        .table-scroll::-webkit-scrollbar { display: none; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 800px;
+        }
+
+        th {
+            background-color: var(--surface);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 16px 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th:first-child {
+            left: 0;
+            z-index: 11;
+        }
+
+        td {
+            border-bottom: 1px solid var(--border);
+            border-right: 1px dashed var(--border);
+            padding: 0;
+            height: 1px; /* Hack para o height: 100% funcionar dentro da tabela */
+        }
+        td:last-child { border-right: none; }
+
+        .time-col {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-align: center;
+            width: 70px;
+            padding: 10px;
+            background-color: var(--surface-hover);
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            border-right: 1px solid var(--border);
+        }
+
+        td.has-class {
+            padding: 0; /* Removido o padding para o bloco colar nas bordas */
+            vertical-align: top;
+        }
+
+        .class-block {
+            border-radius: 0; /* Removido o border-radius */
+            padding: 12px;
+            height: 100%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border-left: 5px solid rgba(0,0,0,0.15); /* Aumentado um pouco para dar contraste */
+            box-sizing: border-box;
+        }
+
+        .class-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            line-height: 1.2;
+        }
+
+        .class-info {
+            font-size: 0.7rem;
+            line-height: 1.4;
+            opacity: 0.9;
+        }
+
+        /* Temas mapeados para os blocos */
+        .theme-anatomia { background-color: var(--theme-anatomia-bg); color: var(--theme-anatomia-text); }
+        .theme-antropologia { background-color: var(--theme-antropologia-bg); color: var(--theme-antropologia-text); }
+        .theme-fundamentos { background-color: var(--theme-fundamentos-bg); color: var(--theme-fundamentos-text); }
+        .theme-biofisica { background-color: var(--theme-biofisica-bg); color: var(--theme-biofisica-text); }
+        .theme-ecologia { background-color: var(--theme-ecologia-bg); color: var(--theme-ecologia-text); }
+        .theme-bioquimica { background-color: var(--theme-bioquimica-bg); color: var(--theme-bioquimica-text); }
+        .theme-histologia { background-color: var(--theme-histologia-bg); color: var(--theme-histologia-text); }
+        .theme-coletiva { background-color: var(--theme-coletiva-bg); color: var(--theme-coletiva-text); }
+
+        /* --- ABA NOTAS --- */
+        .btn-large {
+            background: var(--primary-fade);
+            color: var(--primary);
+            border: 2px dashed var(--primary);
+            width: 100%;
+            padding: 16px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: flex; justify-content: center; gap: 10px;
+            transition: all 0.2s;
+        }
+        .btn-large:active { transform: scale(0.98); background: var(--primary); color: #fff; }
+
+        .grades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            gap: 15px;
+        }
+
+        .grade-card {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        .grade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .input-title {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 800;
+            width: 100%;
+            outline: none;
+        }
+        .input-title::placeholder { color: var(--text-muted); opacity: 0.5; }
+
+        .settings-toggle {
+            background: var(--surface-hover);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            width: 100%;
+            padding: 12px;
+            border-radius: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; margin-bottom: 15px;
+        }
+
+        .settings-content { display: none; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .settings-content.active { display: flex; }
+
+        .textarea-clean {
+            background: var(--surface-hover);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            resize: none; outline: none;
+            min-height: 60px;
+        }
+        .textarea-clean:focus { border-color: var(--primary); }
+
+        .eval-item {
+            display: flex;
+            gap: 10px;
+            background: var(--surface-hover);
+            padding: 8px 8px 8px 15px;
+            border-radius: 16px;
+            margin-bottom: 8px;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+
+        .eval-item input[type="text"] { flex: 1; background: transparent; border: none; color: var(--text-main); font-size: 0.9rem; font-weight: 500; outline: none; }
+        .eval-item input[type="number"] { 
+            width: 65px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; 
+            padding: 10px 5px; text-align: center; font-weight: 700; color: var(--primary); outline: none;
+        }
+
+        .btn-text {
+            background: transparent;
+            color: var(--primary);
+            border: none;
+            font-weight: 700;
+            padding: 10px;
+            margin-top: 5px;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 12px;
+        }
+        .btn-text:hover { background: var(--primary-fade); }
+
+        /* --- LINKS --- */
+        .links-flex {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;
+            scrollbar-width: none; margin-top: 10px; margin-bottom: 20px;
+        }
+        .links-flex::-webkit-scrollbar { display: none; }
+        
+        .link-pill {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 100px;
+            font-size: 0.9rem; font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .link-pill:active { transform: scale(0.95); background: var(--primary-fade); }
+
+        /* Toast Moderno */
+        #save-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: #10b981;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+        #save-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (min-width: 768px) {
+            .grades-grid { grid-template-columns: repeat(2, 1fr); }
+            .links-flex { justify-content: center; }
+        }
+        @media (max-width: 768px) {
+            .schedule-container {
+                margin-left: -15px;
+                margin-right: -15px;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>UFRGS<span>.</span></h1>
+        <p class="subtitle">Enfermagem • Semestre 2026/2</p>
+    </header>
+
+    <!-- Controle Segmentado -->
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab('horarios')">Horários & Info</button>
+        <button class="tab-btn" onclick="switchTab('notas')">Notas</button>
+    </div>
+
+    <!-- CONTEÚDO: ABA HORÁRIOS -->
+    <div id="tab-horarios" class="tab-content active">
+        
+        <div class="widgets-grid">
+            <div class="widget-card">
+                <div class="widget-header">💳 Cartão UFRGS</div>
+                <div class="digital-card">
+                    <div class="digital-card-label">Identificação do Aluno</div>
+                    <div class="digital-card-number">618738</div>
+                </div>
+            </div>
+            
+            <div class="widget-card">
+                <div class="widget-header">🎟️ Tickets RU</div>
+                <div class="input-group">
+                    <input type="text" id="ticket-input" placeholder="Código do ticket..." onkeypress="if(event.key === 'Enter') addTicket()">
+                    <button class="btn-primary" onclick="addTicket()">Adicionar</button>
+                </div>
+                <div id="tickets-list" class="tickets-list"></div>
+            </div>
+        </div>
+
+        <div class="links-flex">
+            <a href="https://www1.ufrgs.br/sistemas/portal/login?Destino=ccd7f388f9a3e25ef6aff3b98c773f65" target="_blank" class="link-pill">🎓 Portal do Aluno</a>
+            <a href="https://www.ufrgs.br/prae/cardapio-ru/" target="_blank" class="link-pill">🍽️ Cardápio RU</a>
+            <a href="https://www1.ufrgs.br/CatalogoServicos/servicos/servico?servico=4105" target="_blank" class="link-pill">🎟️ Comprar Tickets</a>
+        </div>
+
+        <div class="schedule-container">
+            <div class="table-scroll">
+                <table id="schedule-table">
+                    <thead>
+                        <tr>
+                            <th class="time-col">Horário</th>
+                            <th>Segunda</th>
+                            <th>Terça</th>
+                            <th>Quarta</th>
+                            <th>Quinta</th>
+                            <th>Sexta</th>
+                            <th>Sábado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Gerado pelo script da grade -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO: ABA NOTAS -->
+    <div id="tab-notas" class="tab-content">
+        <button class="btn-large" onclick="addSubject()">
+            + Adicionar Disciplina
+        </button>
+        <div class="grades-grid" id="grades-container">
+            <!-- Gerado pelo JS -->
+        </div>
+    </div>
+
+</div>
+
+<div id="save-toast">Salvo ✔️</div>
+
+<script>
+    // ==========================================
+    // ABAS
+    // ==========================================
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    // ==========================================
+    // TICKETS RU
+    // ==========================================
+    function escapeHTML(str) { return str ? str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)) : ''; }
+
+    function loadTickets() {
+        const saved = localStorage.getItem('dashboard_tickets_ufrgs');
+        if (saved) JSON.parse(saved).forEach(t => renderTicket(t));
+    }
+
+    function saveTickets() {
+        const tickets = Array.from(document.querySelectorAll('.ticket-item span')).map(el => el.textContent);
+        localStorage.setItem('dashboard_tickets_ufrgs', JSON.stringify(tickets));
+        showSaveToast();
+    }
+
+    function addTicket() {
+        const input = document.getElementById('ticket-input');
+        const val = input.value.trim();
+        if (val) { renderTicket(val); input.value = ''; saveTickets(); }
+    }
+
+    function renderTicket(val) {
+        const list = document.getElementById('tickets-list');
+        const div = document.createElement('div');
+        div.className = 'ticket-item';
+        div.innerHTML = `<span>${escapeHTML(val)}</span> <button class="btn-icon" onclick="removeTicket(this)">×</button>`;
+        list.insertBefore(div, list.firstChild);
+    }
+
+    function removeTicket(btn) { btn.parentElement.remove(); saveTickets(); }
+
+    // ==========================================
+    // GRADE HORÁRIA (Gerada via JS)
+    // ==========================================
+    const classes = [
+        { name: "Introdução à Antropologia", day: 1, start: "13:30", end: "16:00", bldg: "Prédio 21103", room: "Anfiteatro", campus: "Saúde" },
+        { name: "Fundamentos do Cuidado", day: 1, start: "16:30", end: "18:10", bldg: "Prédio 21103", room: "Anfiteatro A", campus: "Saúde" },
+        { name: "Biofísica Aplicada", day: 2, start: "08:30", end: "10:10", bldg: "Prédio 43433", room: "Sala 205", campus: "Vale" },
+        { name: "Introdução à Ecologia", day: 2, start: "10:30", end: "12:10", bldg: "Prédio 43422", room: "Sala 110", campus: "Vale" },
+        { name: "Bioquímica Aplicada I", day: 2, start: "15:30", end: "18:00", bldg: "Prédio 23201", room: "Sala 301-anexo", campus: "Saúde" },
+        { name: "Anatomia Humana I", day: 3, start: "13:30", end: "15:10", bldg: "Prédio 12101", room: "Sala 221", campus: "Centro" },
+        { name: "Anatomia Humana I", day: 3, start: "15:30", end: "16:20", bldg: "Prédio 12101", room: "Sala 135", campus: "Centro" },
+        { name: "Histologia Humana", day: 3, start: "16:30", end: "18:10", bldg: "Prédio 12101", room: "Sala 115", campus: "Centro" },
+        { name: "Bioquímica Aplicada I", day: 4, start: "08:30", end: "11:00", bldg: "Prédio 23201", room: "Sala 301-anexo", campus: "Saúde" },
+        { name: "Cuidado Enf. Saúde Col. I", day: 4, start: "13:30", end: "16:50", bldg: "Prédio 21103", room: "Anfiteatro A", campus: "Saúde" },
+        { name: "Histologia Humana", day: 5, start: "13:30", end: "15:10", bldg: "Prédio 12101", room: "LAB 105", campus: "Centro" },
+        { name: "Fundamentos do Cuidado", day: 5, start: "15:30", end: "17:10", bldg: "Prédio 21103", room: "Anfiteatro A", campus: "Saúde" },
+        { name: "Introdução à Antropologia", day: 6, start: "10:30", end: "11:20", bldg: "Prédio 21103", room: "Anfiteatro", campus: "Saúde" }
+    ];
+
+    function parseTime(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    function getThemeClass(className) {
+        if (className.includes("Anatomia")) return "theme-anatomia";
+        if (className.includes("Antropologia")) return "theme-antropologia";
+        if (className.includes("Fundamentos")) return "theme-fundamentos";
+        if (className.includes("Biofísica")) return "theme-biofisica";
+        if (className.includes("Ecologia")) return "theme-ecologia";
+        if (className.includes("Bioquímica")) return "theme-bioquimica";
+        if (className.includes("Histologia")) return "theme-histologia";
+        if (className.includes("Coletiva") || className.includes("Col.")) return "theme-coletiva";
+        return "";
+    }
+
+    function renderSchedule() {
+        const tbody = document.querySelector('#schedule-table tbody');
+        let currentTime = parseTime("08:30");
+        const endTime = parseTime("18:10");
+        const skipCells = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+
+        while (currentTime < endTime) {
+            const h = Math.floor(currentTime / 60);
+            const m = currentTime % 60;
+            const timeStr = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+            let nextTime = currentTime + 10;
+            const nextTimeStr = String(Math.floor(nextTime / 60)).padStart(2, '0') + ':' + String(nextTime % 60).padStart(2, '0');
+
+            const tr = document.createElement('tr');
+            const tdTime = document.createElement('td');
+            tdTime.className = 'time-col';
+            tdTime.innerHTML = `${timeStr}<br>-<br>${nextTimeStr}`;
+            tr.appendChild(tdTime);
+
+            for (let d = 1; d <= 6; d++) {
+                if (skipCells[d] > 0) { skipCells[d]--; continue; }
+
+                const cls = classes.find(c => c.day === d && c.start === timeStr);
+                if (cls) {
+                    const spans = (parseTime(cls.end) - parseTime(cls.start)) / 10;
+                    const td = document.createElement('td');
+                    td.rowSpan = spans;
+                    td.className = 'has-class';
+                    
+                    // Estrutura do bloco moderno inserida dentro do td
+                    td.innerHTML = `
+                        <div class="class-block ${getThemeClass(cls.name)}">
+                            <span class="class-title">${cls.name}</span>
+                            <div class="class-info">
+                                <b>Prédio:</b> ${cls.bldg}<br>
+                                <b>Sala:</b> ${cls.room}<br>
+                                <em>📍 Campus ${cls.campus}</em>
+                            </div>
+                        </div>
+                    `;
+                    tr.appendChild(td);
+                    skipCells[d] = spans - 1;
+                } else {
+                    const td = document.createElement('td');
+                    td.className = 'empty-cell';
+                    tr.appendChild(td);
+                }
+            }
+            tbody.appendChild(tr);
+            currentTime += 10;
+        }
+    }
+
+    // ==========================================
+    // NOTAS (MEMÓRIA)
+    // ==========================================
+    let saveTimeout;
+    function showSaveToast() {
+        const toast = document.getElementById('save-toast');
+        toast.classList.add('show');
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function saveData() {
+        const data = Array.from(document.querySelectorAll('.grade-card')).map(card => ({
+            title: card.querySelector('.input-title').value,
+            criteria: card.querySelectorAll('.textarea-clean')[0].value,
+            formula: card.querySelectorAll('.textarea-clean')[1].value,
+            settingsActive: card.querySelector('.settings-content').classList.contains('active'),
+            evals: Array.from(card.querySelectorAll('.eval-item')).map(item => ({
+                type: item.querySelector('input[type="text"]').value,
+                grade: item.querySelector('input[type="number"]').value
+            }))
+        }));
+        localStorage.setItem('dashboard_notas_ufrgs', JSON.stringify(data));
+        showSaveToast();
+    }
+
+    function loadData() {
+        const container = document.getElementById('grades-container');
+        container.innerHTML = '';
+        const saved = localStorage.getItem('dashboard_notas_ufrgs');
+        
+        if (saved) {
+            JSON.parse(saved).forEach(subject => {
+                const evalsHTML = subject.evals.map(ev => `
+                    <div class="eval-item">
+                        <input type="text" value="${escapeHTML(ev.type)}" placeholder="Avaliação">
+                        <input type="number" step="0.1" value="${escapeHTML(ev.grade)}" placeholder="0.0">
+                        <button class="btn-icon" onclick="removeEvaluation(this)">×</button>
+                    </div>`).join('');
+
+                const card = document.createElement('div');
+                card.className = 'grade-card';
+                card.innerHTML = `
+                    <div class="grade-header">
+                        <input type="text" class="input-title" value="${escapeHTML(subject.title)}" placeholder="Nome da Disciplina">
+                        <button class="btn-icon" onclick="removeSubject(this)">🗑</button>
+                    </div>
+                    <div class="settings-toggle" onclick="toggleConfig(this)">
+                        Critérios e Fórmulas <span>${subject.settingsActive ? '▲' : '▼'}</span>
+                    </div>
+                    <div class="settings-content ${subject.settingsActive ? 'active' : ''}">
+                        <textarea class="textarea-clean" placeholder="Parâmetros de Conceito (ex: A: 9.0 a 10)">${escapeHTML(subject.criteria)}</textarea>
+                        <textarea class="textarea-clean" placeholder="Fórmula da Média (ex: P1*0.4 + T1*0.6)">${escapeHTML(subject.formula)}</textarea>
+                    </div>
+                    <div class="evaluations-list">${evalsHTML}</div>
+                    <button class="btn-text" onclick="addEvaluation(this)">+ Nova Nota</button>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            createSampleSubject();
+        }
+    }
+
+    ['input', 'change', 'keyup'].forEach(evt => {
+        document.addEventListener(evt, e => {
+            if (e.target.id === 'ticket-input') return;
+            if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) saveData();
+        });
+    });
+
+    function toggleConfig(btn) {
+        const content = btn.nextElementSibling;
+        content.classList.toggle('active');
+        btn.querySelector('span').textContent = content.classList.contains('active') ? '▲' : '▼';
+        saveData();
+    }
+
+    function removeSubject(btn) { if(confirm("Excluir disciplina?")) { btn.closest('.grade-card').remove(); saveData(); } }
+    function removeEvaluation(btn) { btn.closest('.eval-item').remove(); saveData(); }
+
+    function addSubject() {
+        const container = document.getElementById('grades-container');
+        const card = document.createElement('div');
+        card.className = 'grade-card';
+        card.innerHTML = `
+            <div class="grade-header">
+                <input type="text" class="input-title" placeholder="Nome da Disciplina">
+                <button class="btn-icon" onclick="removeSubject(this)">🗑</button>
+            </div>
+            <div class="settings-toggle" onclick="toggleConfig(this)">
+                Critérios e Fórmulas <span>▼</span>
+            </div>
+            <div class="settings-content">
+                <textarea class="textarea-clean" placeholder="Parâmetros de Conceito (ex: A: 9.0 a 10)"></textarea>
+                <textarea class="textarea-clean" placeholder="Fórmula da Média"></textarea>
+            </div>
+            <div class="evaluations-list"></div>
+            <button class="btn-text" onclick="addEvaluation(this)">+ Nova Nota</button>
+        `;
+        container.insertBefore(card, container.firstChild);
+        saveData();
+    }
+
+    function addEvaluation(btn) {
+        const list = btn.previousElementSibling;
+        const div = document.createElement('div');
+        div.className = 'eval-item';
+        div.innerHTML = `
+            <input type="text" placeholder="Ex: Estudo de Caso">
+            <input type="number" step="0.1" placeholder="0.0">
+            <button class="btn-icon" onclick="removeEvaluation(this)">×</button>
+        `;
+        list.appendChild(div);
+        saveData();
+    }
+
+    function createSampleSubject() {
+        addSubject();
+        const card = document.querySelector('.grade-card');
+        card.querySelector('.input-title').value = "Fundamentos do Cuidado em Enfermagem";
+        card.querySelectorAll('.textarea-clean')[0].value = "A: 9.0 a 10.0\nB: 7.5 a 8.9\nC: 6.0 a 7.4";
+        card.querySelectorAll('.textarea-clean')[1].value = "Média: (Teórica * 0.5) + (Prática * 0.5)";
+        
+        const btnEval = card.querySelector('.btn-text');
+        addEvaluation(btnEval);
+        addEvaluation(btnEval);
+        
+        const items = card.querySelectorAll('.eval-item');
+        items[0].querySelector('input[type="text"]').value = "Prova Teórica";
+        items[0].querySelector('input[type="number"]').value = "8.5";
+        items[1].querySelector('input[type="text"]').value = "Prática Clínica";
+        items[1].querySelector('input[type="number"]').value = "9.5";
+        
+        saveData();
+    }
+
+    window.onload = () => { 
+        renderSchedule();
+        loadData(); 
+        loadTickets(); 
+    };
+</script>
+</body>
+</html>
